@@ -1,4 +1,6 @@
-include_directories(../include)
+include_directories(../include
+	../thirdparty/rapidjson/include
+	../thirdparty/tclap/include)
 
 add_executable("SanitariumHDPatcher"
 	main.cpp
