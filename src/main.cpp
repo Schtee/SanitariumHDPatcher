@@ -49,7 +49,7 @@ void run(const char* executablePath,
 		executableDirectoryPath,
 		&si,
 		&pi);
-	
+
 	delete[] executableDirectoryPath;
 	delete[] argsToForwardCStr;
 
@@ -66,7 +66,7 @@ void run(const char* executablePath,
 	{
 		if (!WaitForDebugEvent(&debugEvent, INFINITE))
 			return;
-		
+
 		switch (debugEvent.dwDebugEventCode)
 		{
 		case CREATE_PROCESS_DEBUG_EVENT:
@@ -163,7 +163,9 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		TCLAP::CmdLine cmd("Sanitarium HD Patcher", ' ', "0.0.1");
+		TCLAP::CmdLine cmd("Sanitarium HD Patcher",
+			' ',
+			"0.1.0");
 
 		TCLAP::ValueArg<uint16_t> width("x", "width", "Resolution width (default: 640)", false, 640, "number", cmd);
 		TCLAP::ValueArg<uint16_t> height("y", "height", "Resolution height (default: 480)", false, 480, "number", cmd);
