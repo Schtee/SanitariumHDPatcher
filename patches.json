@@ -1,0 +1,28 @@
+{
+	"patchesByHash":
+	{
+		"0A09F1956FCA274172B0BB90AA5F08A7":
+		[
+			{
+				"name":"Draw size height",
+				"address":"0x41A600",
+				"variable":"resHeight"
+			},
+			{
+				"name":"Draw size width",
+				"address":"0x41A605",
+				"variable":"resWidth"
+			},
+			{
+				"name":"Update size height",
+				"address":"0x40AC6B",
+				"variable":"resHeight"
+			},
+			{
+				"name":"Update size width",
+				"address":"0x40AC79",
+				"variable":"resWidth"
+			}
+		]
+	}
+}
