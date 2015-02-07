@@ -21,3 +21,4 @@ target_link_libraries(SanitariumHDPatcher
 
 install(TARGETS SanitariumHDPatcher DESTINATION ./)
 install(FILES "${PROJECT_SOURCE_DIR}/resources/patches.json" DESTINATION ./)
+install(FILES "${PROJECT_SOURCE_DIR}/readme.md" DESTINATION ./)
