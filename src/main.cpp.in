@@ -1,0 +1,208 @@
+#include "PatchesJSONParser.h"
+
+#include <tclap/CmdLine.h>
+
+#include "md5.h"
+
+#include <Windows.h>
+#include <Shlwapi.h>
+#include <Psapi.h>
+
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <vector>
+
+#include <stdint.h>
+
+void throwFailedToOpenPath(const std::string& path)
+{
+	std::stringstream ss;
+	ss << "Failed to open " << path;
+	throw std::runtime_error(ss.str());
+}
+
+void run(const char* executablePath,
+	const std::string& argsToForward,
+	PatchCollection& patches)
+{
+	char* executableDirectoryPath = new char[strlen(executablePath) + 1];
+	strcpy(executableDirectoryPath, executablePath);
+	PathRemoveFileSpecA(executableDirectoryPath);
+
+	char* argsToForwardCStr = new char[argsToForward.size() + 1];
+	strcpy(argsToForwardCStr, argsToForward.c_str());
+
+	STARTUPINFOA si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	BOOL ok = CreateProcessA(executablePath,
+		argsToForwardCStr,
+		nullptr,
+		nullptr,
+		FALSE,
+		DEBUG_PROCESS,
+		nullptr,
+		executableDirectoryPath,
+		&si,
+		&pi);
+
+	delete[] executableDirectoryPath;
+	delete[] argsToForwardCStr;
+
+	if (!ok)
+	{
+		throwFailedToOpenPath(executablePath);
+	}
+
+	DEBUG_EVENT debugEvent = { 0 };
+	ZeroMemory(&debugEvent, sizeof(debugEvent));
+
+	bool running = true;
+	while (running)
+	{
+		if (!WaitForDebugEvent(&debugEvent, INFINITE))
+			return;
+
+		switch (debugEvent.dwDebugEventCode)
+		{
+		case CREATE_PROCESS_DEBUG_EVENT:
+			DebugSetProcessKillOnExit(false);
+
+			patches.apply(pi.hProcess);
+			running = false;
+			break;
+		}
+
+		if (!ContinueDebugEvent(debugEvent.dwProcessId,
+			debugEvent.dwThreadId,
+			DBG_CONTINUE))
+		{
+			running = false;
+		}
+	}
+}
+
+std::string createArgsStringForArgsVector(const std::string& executablePath,
+	const std::vector<std::string> vector)
+{
+	std::stringstream ss;
+	ss << executablePath << " ";
+	for (size_t i = 0; i < vector.size(); ++i)
+	{
+		ss << vector[i];
+		if (i != vector.size() - 1)
+		{
+			ss << " ";
+		}
+	}
+	return ss.str();
+}
+
+PatchesJSONParser::VariableMap createVariableMap(const uint16_t width,
+	const uint16_t height)
+{
+	const uint8_t* widthPtr = (uint8_t*)&width;
+	const uint8_t* heightPtr= (uint8_t*)&height;
+	const Bytes widthBytes(widthPtr, widthPtr + 2);
+	const Bytes heightBytes(heightPtr, heightPtr + 2);
+	return
+	{
+		{ "resWidth", widthBytes },
+		{ "resHeight", heightBytes }
+	};
+}
+
+std::string loadFile(const std::string& path)
+{
+	std::ifstream jsonFile("patches.json");
+	if (!jsonFile)
+		throwFailedToOpenPath(path);
+	const std::string json = std::string(std::istreambuf_iterator<char>(jsonFile), std::istreambuf_iterator<char>());
+	return json;
+}
+
+char convert(const char& c)
+{
+	return toupper(c);
+}
+
+PatchCollection getPatchesMatchingHashOfExecutable(const std::string executablePath,
+	const PatchesJSONParser::PatchCollectionsByHash& allPatches)
+{
+	std::ifstream executable(executablePath.c_str(), std::ios_base::binary);
+	if (!executable.is_open())
+	{
+		throwFailedToOpenPath(executablePath);
+	}
+	std::istreambuf_iterator<char> fileBegin(executable);
+	std::istreambuf_iterator<char> eof;
+
+	const Bytes executableBytes(fileBegin, eof);
+
+	MD5 md5;
+	md5.update(&executableBytes[0], executableBytes.size());
+	md5.finalize();
+	std::string hash = md5.hexdigest();
+	std::transform(hash.begin(), hash.end(), hash.begin(), convert);
+
+	const auto found = allPatches.find(hash);
+	if (found == allPatches.end())
+	{
+		std::cout << "No patches for hash " << hash << " found." << std::endl;
+		return PatchCollection();
+	}
+
+	return found->second;
+}
+
+int main(int argc, char** argv)
+{
+	try
+	{
+		TCLAP::CmdLine cmd("Sanitarium HD Patcher",
+			' ',
+			"@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@");
+
+		TCLAP::ValueArg<uint16_t> width("x", "width", "Resolution width (default: 640)", false, 640, "number", cmd);
+		TCLAP::ValueArg<uint16_t> height("y", "height", "Resolution height (default: 480)", false, 480, "number", cmd);
+		TCLAP::ValueArg<std::string> executablePath("e", "exec-path", "Sanitarium executable path (default: .\\Sntrm.exe)", false, ".\\Sntrm.exe", "string", cmd);
+		TCLAP::UnlabeledMultiArg<std::string> argsVector("args", "Command line arguments to pass to Sanitarium", false, "string", cmd);
+		cmd.parse(argc, argv);
+
+		const std::string args = createArgsStringForArgsVector(executablePath.getValue(),
+			argsVector.getValue());
+
+		const PatchesJSONParser::VariableMap variablesByName(
+			createVariableMap(
+				width.getValue(),
+				height.getValue()));
+
+		const std::string json = loadFile("./patches.json");
+
+		PatchesJSONParser patchesParser;
+		PatchesJSONParser::PatchCollectionsByHash allPatches(patchesParser.parse(json, variablesByName));
+		PatchCollection patchesMatchingHash = getPatchesMatchingHashOfExecutable(executablePath.getValue(), allPatches);
+
+		run(executablePath.getValue().c_str(),
+			args,
+			patchesMatchingHash);
+	}
+	catch (const TCLAP::ArgException& e)
+	{
+		std::cerr << "Error: " << e.error() << " for " << e.argId() << std::endl;
+
+		return 1;
+	}
+	catch (const std::runtime_error& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+
+		return 1;
+	}
+
+	return 0;
+}
