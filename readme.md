@@ -3,6 +3,8 @@ A little runtime, in-memory patcher to allow Sanitarium to run at a resolution
 of your chosing! As the patch is applied in memory it will **not** modify your
 files.
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/LIX9yfyEX50" frameborder="0" allowfullscreen></iframe>
+
 ## Usage
 ### Simple
 1. Extract `Sanitarium HD Patcher.exe` and `patches.json` to your Sanitarium
