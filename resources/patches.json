@@ -23,6 +23,52 @@
 				"address":"0x40AC79",
 				"variable":"resWidth"
 			}
+		],
+		"5B173E752B2629240CDCF16221DC1164":
+		[
+			{
+				"name":"Draw size height",
+				"address":"0x41A600",
+				"variable":"resHeight"
+			},
+			{
+				"name":"Draw size width",
+				"address":"0x41A605",
+				"variable":"resWidth"
+			},
+			{
+				"name":"Update size height",
+				"address":"0x40AC6B",
+				"variable":"resHeight"
+			},
+			{
+				"name":"Update size width",
+				"address":"0x40AC79",
+				"variable":"resWidth"
+			}
+		],
+		"3CB90D988460FC0AD095956D8415FD36":
+		[
+			{
+				"name":"Draw size height",
+				"address":"0x41A645",
+				"variable":"resHeight"
+			},
+			{
+				"name":"Draw size width",
+				"address":"0x41A64A",
+				"variable":"resWidth"
+			},
+			{
+				"name":"Update size height",
+				"address":"0x40AC6B",
+				"variable":"resHeight"
+			},
+			{
+				"name":"Update size width",
+				"address":"0x40AC79",
+				"variable":"resWidth"
+			}
 		]
 	}
 }

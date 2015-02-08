@@ -165,7 +165,7 @@ int main(int argc, char** argv)
 	{
 		TCLAP::CmdLine cmd("Sanitarium HD Patcher",
 			' ',
-			"0.1.0");
+			"0.2.0");
 
 		TCLAP::ValueArg<uint16_t> width("x", "width", "Resolution width (default: 640)", false, 640, "number", cmd);
 		TCLAP::ValueArg<uint16_t> height("y", "height", "Resolution height (default: 480)", false, 480, "number", cmd);
