@@ -1,4 +1,4 @@
-# Sanitarium HD Patcher v0.2.0
+# [Sanitarium HD Patcher v0.2.1](http://makegames.co.uk/sanitariumhd/)
 A little runtime, in-memory patcher to allow Sanitarium to run at a resolution
 of your chosing! As the patch is applied in memory it will **not** modify your
 files.
