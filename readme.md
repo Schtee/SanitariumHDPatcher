@@ -4,6 +4,8 @@ of your chosing! As the patch is applied in memory it will **not** modify your
 files.
 
 # Changelog
+* v0.2.1
+	* Changed to statically linking runtime, to avoid dependency
 * v0.2.0
 	* Added support for current GOG build
 	* Added support for another disc version
