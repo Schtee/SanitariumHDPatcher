@@ -1,6 +1,6 @@
 [submodule "thirdparty/tclap"]
 	path = thirdparty/tclap
-	url = https://github.com/BlueBrain/tclap.git
+	url = https://github.com/Schtee/tclap
 [submodule "thirdparty/rapidjson"]
 	path = thirdparty/rapidjson
-	url = https://github.com/miloyip/rapidjson.git
+	url = https://github.com/Schtee/rapidjson
